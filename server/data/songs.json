@@ -22,5 +22,61 @@
     "UserId": 2,
     "createdAt": "2025-01-01T00:00:00.000Z",
     "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "title": "Shape of You",
+    "artist": "Ed Sheeran",
+    "audioUrl": "https://example.com/shape-of-you.mp3",
+    "UserId": 1,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "title": "Someone Like You",
+    "artist": "Adele",
+    "audioUrl": "https://example.com/someone-like-you.mp3",
+    "UserId": 2,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "title": "Levitating",
+    "artist": "Dua Lipa",
+    "audioUrl": "https://example.com/levitating.mp3",
+    "UserId": 1,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "title": "In the End",
+    "artist": "Linkin Park",
+    "audioUrl": "https://example.com/in-the-end.mp3",
+    "UserId": 2,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "title": "Perfect",
+    "artist": "Ed Sheeran",
+    "audioUrl": "https://example.com/perfect.mp3",
+    "UserId": 1,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "title": "Uptown Funk",
+    "artist": "Mark Ronson ft. Bruno Mars",
+    "audioUrl": "https://example.com/uptown-funk.mp3",
+    "UserId": 2,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
+  },
+  {
+    "title": "Rolling in the Deep",
+    "artist": "Adele",
+    "audioUrl": "https://example.com/rolling-in-the-deep.mp3",
+    "UserId": 1,
+    "createdAt": "2025-01-01T00:00:00.000Z",
+    "updatedAt": "2025-01-01T00:00:00.000Z"
   }
 ]
