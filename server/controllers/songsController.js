@@ -4,7 +4,7 @@ class SongsController {
   static async create(req, res, next) {
     try {
       const { title, artist, audioUrl } = req.body;
-      const UserId = req.user.id; // from authentication middleware
+      const UserId = req.user.id;
 
       if (!title || !artist || !audioUrl) {
         return res
@@ -55,7 +55,6 @@ class SongsController {
       const song = await Song.findByPk(id);
       if (!song) return res.status(404).json({ message: "Song not found" });
 
-      // authorization middleware already checked ownership/admin
       song.title = title ?? song.title;
       song.artist = artist ?? song.artist;
       song.audioUrl = audioUrl ?? song.audioUrl;

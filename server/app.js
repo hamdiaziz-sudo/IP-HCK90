@@ -8,7 +8,6 @@ app.use(cors());
 app.use(express.json());
 app.use(router);
 
-// global error handler (paling akhir)
 app.use(errorHandler);
 
 module.exports = app;

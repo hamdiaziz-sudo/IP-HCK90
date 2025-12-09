@@ -44,7 +44,6 @@ module.exports = {
       },
     });
 
-    // prevent duplicate songs in 1 playlist
     await queryInterface.addConstraint("PlaylistSongs", {
       fields: ["PlaylistId", "SongId"],
       type: "unique",

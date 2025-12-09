@@ -13,7 +13,7 @@ class AuthController {
           .json({ message: "Password must be at least 6 characters" });
       }
 
-      const user = await User.create({ username, email, password, role }); // role optional
+      const user = await User.create({ username, email, password, role });
       res
         .status(201)
         .json({ id: user.id, username: user.username, email: user.email });

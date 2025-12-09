@@ -8,14 +8,13 @@ function authentication(req, res, next) {
       return res.status(401).json({ message: "Invalid token" });
     }
 
-    // support "Bearer <token>"
     if (access_token.startsWith("Bearer ")) {
       access_token = access_token.split(" ")[1];
     }
 
     const payload = verifyToken(access_token);
 
-    req.user = payload; // simpan user ke request
+    req.user = payload;
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid token" });

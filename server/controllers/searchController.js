@@ -6,7 +6,6 @@ const path = require("path");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Supported audio MIME types
 const SUPPORTED_AUDIO_TYPES = [
   "audio/mpeg",
   "audio/wav",
@@ -16,7 +15,6 @@ const SUPPORTED_AUDIO_TYPES = [
 ];
 
 class SearchController {
-  // Text-based search (untuk testing tanpa API quota)
   static async searchByText(req, res, next) {
     try {
       const { query } = req.body;
@@ -28,7 +26,6 @@ class SearchController {
       const text = query.trim();
       console.log("🔍 Text search query:", text);
 
-      // Cari lagu berdasarkan query text
       const songs = await Song.findAll({
         where: {
           [Op.or]: [
@@ -56,12 +53,10 @@ class SearchController {
     let tempFilePath = null;
 
     try {
-      // Validasi file exists
       if (!req.file) {
         return res.status(400).json({ message: "Audio file is required" });
       }
 
-      // Validasi file type
       if (!SUPPORTED_AUDIO_TYPES.includes(req.file.mimetype)) {
         return res.status(400).json({
           message: `Unsupported audio format. Supported formats: ${SUPPORTED_AUDIO_TYPES.join(
@@ -70,7 +65,6 @@ class SearchController {
         });
       }
 
-      // Validasi file size (max 25MB untuk Gemini)
       const fileSizeInMB = req.file.buffer.length / (1024 * 1024);
       if (fileSizeInMB > 25) {
         return res.status(400).json({
@@ -84,32 +78,27 @@ class SearchController {
         size: `${fileSizeInMB.toFixed(2)} MB`,
       });
 
-      // Buat folder temp
       const tempDir = path.join(__dirname, "../temp");
       if (!fs.existsSync(tempDir)) {
         fs.mkdirSync(tempDir, { recursive: true });
       }
 
-      // Simpan file sementara
       tempFilePath = path.join(
         tempDir,
         `${Date.now()}-${req.file.originalname}`
       );
       fs.writeFileSync(tempFilePath, req.file.buffer);
 
-      // Gunakan model Gemini terbaru
       const model = genAI.getGenerativeModel({
         model: "gemini-2.0-flash",
       });
 
       console.log("🤖 Using model: gemini-2.0-flash");
 
-      // Baca file sebagai base64
       const audioData = fs.readFileSync(tempFilePath).toString("base64");
 
       console.log("🎵 Processing audio file...");
 
-      // Optimized prompt untuk transcription
       const result = await model.generateContent([
         {
           inlineData: {
@@ -131,7 +120,6 @@ class SearchController {
       let text = result.response.text().trim();
       console.log("✅ Transcription:", text);
 
-      // Handle case when no speech is detected
       if (text.toLowerCase().includes("no speech detected")) {
         return res.status(400).json({
           success: false,
@@ -139,12 +127,10 @@ class SearchController {
         });
       }
 
-      // Hapus file temp
       if (fs.existsSync(tempFilePath)) {
         fs.unlinkSync(tempFilePath);
       }
 
-      // Cari lagu berdasarkan transcription
       const songs = await Song.findAll({
         where: {
           [Op.or]: [
@@ -152,7 +138,7 @@ class SearchController {
             { artist: { [Op.iLike]: `%${text}%` } },
           ],
         },
-        limit: 20, // Limit hasil ke 20 lagu
+        limit: 20,
       });
 
       console.log(`🔍 Found ${songs.length} song(s)`);
@@ -166,12 +152,10 @@ class SearchController {
     } catch (err) {
       console.error("❌ Error:", err);
 
-      // Hapus file temp jika ada error
       if (tempFilePath && fs.existsSync(tempFilePath)) {
         fs.unlinkSync(tempFilePath);
       }
 
-      // Error handling yang aman
       if (
         err.status === 429 ||
         err.message.includes("Too Many Requests") ||
@@ -179,7 +163,8 @@ class SearchController {
       ) {
         return res.status(429).json({
           success: false,
-          message: "API quota exceeded. Please use /search/text endpoint for text-based search, or upgrade to paid API plan.",
+          message:
+            "API quota exceeded. Please use /search/text endpoint for text-based search, or upgrade to paid API plan.",
           alternative: "/search/text (POST with { query: 'song name' })",
         });
       }
@@ -201,7 +186,6 @@ class SearchController {
         });
       }
 
-      // Generic error
       res.status(500).json({
         success: false,
         message: "An error occurred while processing your request",

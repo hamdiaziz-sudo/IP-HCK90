@@ -1,5 +1,5 @@
 require("dotenv").config();
-const app = require("../app"); // karena http.js berada di folder helpers
+const app = require("../app");
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {

@@ -4,7 +4,6 @@ function errorHandler(err, req, res, next) {
   const status = err.status || 500;
   const message = err.message || "Internal Server Error";
 
-  // Jika terdapat errors dari Sequelize validations, bentuk jadi array message
   if (
     err.name === "SequelizeValidationError" ||
     err.name === "SequelizeUniqueConstraintError"

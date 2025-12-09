@@ -1,7 +1,6 @@
 const { Playlist, Song, PlaylistSong } = require("../models");
 
 class PlaylistController {
-  // GET /playlists (list playlist user)
   static async findAll(req, res, next) {
     try {
       const playlists = await Playlist.findAll({
@@ -15,7 +14,6 @@ class PlaylistController {
     }
   }
 
-  // POST /playlists
   static async create(req, res, next) {
     try {
       const { name } = req.body;
@@ -30,7 +28,6 @@ class PlaylistController {
     }
   }
 
-  // POST /playlists/:playlistId/songs/:songId → add song
   static async addSong(req, res, next) {
     try {
       const { playlistId, songId } = req.params;
@@ -52,7 +49,6 @@ class PlaylistController {
     }
   }
 
-  // DELETE /playlists/:playlistId/songs/:songId
   static async removeSong(req, res, next) {
     try {
       const { playlistId, songId } = req.params;
