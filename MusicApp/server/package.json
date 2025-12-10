@@ -1,0 +1,55 @@
+{
+  "name": "ip-hck90",
+  "version": "1.0.0",
+  "description": "Music Application Server with REST API",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "db:create": "node scripts/create-db.js",
+    "db:setup": "node scripts/setup-db.js",
+    "db:init": "node scripts/init-db.js",
+    "db:migrate": "sequelize-cli db:migrate",
+    "db:migrate:undo": "sequelize-cli db:migrate:undo",
+    "db:seed:all": "sequelize-cli db:seed:all",
+    "db:seed:undo:all": "sequelize-cli db:seed:undo:all",
+    "seed:spotify": "node scripts/seed-spotify.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hamdiaziz-sudo/IP-HCK90.git"
+  },
+  "keywords": [
+    "music",
+    "api",
+    "spotify"
+  ],
+  "author": "Hamdi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hamdiaziz-sudo/IP-HCK90/issues"
+  },
+  "homepage": "https://github.com/hamdiaziz-sudo/IP-HCK90#readme",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "google-auth-library": "^10.5.0",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3",
+    "sequelize": "^6.37.7",
+    "spotify-web-api-node": "^5.0.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.11",
+    "sequelize-cli": "^6.6.3",
+    "supertest": "^6.3.3"
+  }
+}
