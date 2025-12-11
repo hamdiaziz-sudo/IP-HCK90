@@ -1,48 +1,49 @@
 module.exports = (sequelize, DataTypes) => {
-  const Song = sequelize.define('Song', {
+  const User = sequelize.define('User', {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true
     },
-    spotifyId: {
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      validate: {
+        isEmail: true
+      }
+    },
+    username: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true
     },
-    spotifyUri: {
+    password: {
+      type: DataTypes.STRING,
+      allowNull: true // nullable for Google OAuth users
+    },
+    firstName: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    title: {
-      type: DataTypes.STRING,
-      allowNull: false
-    },
-    artists: {
-      type: DataTypes.JSON,
-      allowNull: false
-    },
-    album: {
+    lastName: {
       type: DataTypes.STRING,
       allowNull: true
     },
-    imageUrl: {
+    profileImage: {
       type: DataTypes.TEXT,
       allowNull: true
     },
-    duration: {
-      type: DataTypes.INTEGER,
-      allowNull: true
+    googleId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true
     },
-    previewUrl: {
-      type: DataTypes.TEXT,
-      allowNull: true
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     },
-    externalUrl: {
-      type: DataTypes.TEXT,
-      allowNull: true
-    },
-    mood: {
+    verificationToken: {
       type: DataTypes.STRING,
       allowNull: true
     },
@@ -55,9 +56,9 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
     }
   }, {
-    tableName: 'songs',
+    tableName: 'users',
     timestamps: true
   });
 
-  return Song;
+  return User;
 };

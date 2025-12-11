@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const musicRoutes = require('./routes/musicRoutes');
 const playlistRoutes = require('./routes/playlistRoutes');
 const favoriteRoutes = require('./routes/favoriteRoutes');
+const youtubeRoutes = require('./routes/youtubeRoutes');
 const errorHandler = require('./middleware/errorHandler');
 const { initializeSpotify } = require('./utils/externalApis');
 const logger = require('./utils/logger');
@@ -13,7 +14,14 @@ const logger = require('./utils/logger');
 const app = express();
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:5174'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -22,6 +30,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/music', musicRoutes);
 app.use('/api/playlists', playlistRoutes);
 app.use('/api/favorites', favoriteRoutes);
+app.use('/api/youtube', youtubeRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

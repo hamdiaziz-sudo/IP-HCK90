@@ -8,7 +8,7 @@ const router = express.Router();
 // Search music by keyword
 router.get('/search', authenticateToken, async (req, res, next) => {
   try {
-    const { q } = req.query;
+    const { q, limit = 20 } = req.query;
 
     if (!q || q.trim().length === 0) {
       return res.status(400).json({ error: 'Search query is required' });
@@ -22,7 +22,7 @@ router.get('/search', authenticateToken, async (req, res, next) => {
     });
 
     // Search from Spotify
-    const tracks = await searchMusic(q);
+    const tracks = await searchMusic(q, parseInt(limit) || 20);
 
     // Save tracks to database (if not exists)
     const savedTracks = await Promise.all(
@@ -40,8 +40,50 @@ router.get('/search', authenticateToken, async (req, res, next) => {
 
     res.json({
       message: 'Search successful',
-      total: savedTracks.length,
-      data: savedTracks
+      data: {
+        total: savedTracks.length,
+        tracks: savedTracks
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Search music by genre (for home page recommendations)
+router.get('/genre/:genre', authenticateToken, async (req, res, next) => {
+  try {
+    const { genre } = req.params;
+    const { limit = 12 } = req.query;
+
+    if (!genre || genre.trim().length === 0) {
+      return res.status(400).json({ error: 'Genre is required' });
+    }
+
+    // Search from Spotify
+    const tracks = await searchMusic(genre, parseInt(limit) || 12);
+
+    // Save tracks to database (if not exists)
+    const savedTracks = await Promise.all(
+      tracks.map(async (track) => {
+        const [song] = await Song.findOrCreate({
+          where: { spotifyId: track.spotifyId },
+          defaults: {
+            ...track,
+            mood: null
+          }
+        });
+        return song.toJSON();
+      })
+    );
+
+    res.json({
+      message: `Tracks for genre: ${genre}`,
+      data: {
+        genre,
+        total: savedTracks.length,
+        tracks: savedTracks
+      }
     });
   } catch (error) {
     next(error);
@@ -49,9 +91,9 @@ router.get('/search', authenticateToken, async (req, res, next) => {
 });
 
 // Search music by mood
-router.get('/mood', authenticateToken, async (req, res, next) => {
+router.post('/mood', authenticateToken, async (req, res, next) => {
   try {
-    const { mood } = req.query;
+    const { mood, limit = 20 } = req.body;
 
     if (!mood || mood.trim().length === 0) {
       return res.status(400).json({ error: 'Mood is required' });
@@ -65,7 +107,7 @@ router.get('/mood', authenticateToken, async (req, res, next) => {
     });
 
     // Search by mood using Gemini AI
-    const tracks = await searchMusicByMood(mood);
+    const tracks = await searchMusicByMood(mood, parseInt(limit) || 20);
 
     // Save tracks to database (if not exists)
     const savedTracks = await Promise.all(
@@ -80,9 +122,11 @@ router.get('/mood', authenticateToken, async (req, res, next) => {
 
     res.json({
       message: `Search successful for mood: ${mood}`,
-      mood,
-      total: savedTracks.length,
-      data: savedTracks
+      data: {
+        mood,
+        total: savedTracks.length,
+        tracks: savedTracks
+      }
     });
   } catch (error) {
     next(error);

@@ -1,5 +1,11 @@
 const errorHandler = (err, req, res, next) => {
-  console.error('Error:', err);
+  console.error('Error Details:', {
+    message: err.message,
+    stack: err.stack,
+    name: err.name,
+    endpoint: req.path,
+    method: req.method
+  });
 
   if (err.name === 'SequelizeValidationError') {
     return res.status(400).json({
@@ -21,7 +27,8 @@ const errorHandler = (err, req, res, next) => {
 
   res.status(500).json({
     error: 'Internal server error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+    ...(process.env.NODE_ENV === 'development' && { details: err.stack })
   });
 };
 

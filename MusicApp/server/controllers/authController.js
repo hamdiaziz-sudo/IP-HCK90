@@ -1,15 +1,12 @@
-const express = require('express');
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
-const { hashPassword, comparePassword, generateToken } = require('../utils/authUtils');
-const authenticateToken = require('../middleware/authenticateToken');
+const { hashPassword, comparePassword, generateToken } = require('../helpers/authUtils');
 const { OAuth2Client } = require('google-auth-library');
 
-const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Register
-router.post('/register', async (req, res, next) => {
+exports.register = async (req, res, next) => {
   try {
     const { email, username, password, firstName, lastName } = req.body;
 
@@ -67,10 +64,10 @@ router.post('/register', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+};
 
 // Login
-router.post('/login', async (req, res, next) => {
+exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -111,10 +108,10 @@ router.post('/login', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
+};
 
 // Google OAuth
-router.post('/google', async (req, res, next) => {
+exports.googleAuth = async (req, res, next) => {
   try {
     const { token } = req.body;
 
@@ -122,6 +119,8 @@ router.post('/google', async (req, res, next) => {
       return res.status(400).json({ error: 'Token is required' });
     }
 
+    console.log('🔐 Verifying Google token...');
+    
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID
@@ -129,6 +128,8 @@ router.post('/google', async (req, res, next) => {
 
     const payload = ticket.getPayload();
     const { sub: googleId, email, name, picture } = payload;
+
+    console.log(`✅ Google token verified for: ${email}`);
 
     let user = await User.findOne({
       where: { email }
@@ -138,6 +139,8 @@ router.post('/google', async (req, res, next) => {
       // Create new user from Google data
       const [firstName, ...lastNameParts] = name.split(' ');
       const lastName = lastNameParts.join(' ');
+
+      console.log(`📝 Creating new user: ${email}`);
 
       user = await User.create({
         googleId,
@@ -150,9 +153,12 @@ router.post('/google', async (req, res, next) => {
       });
     } else if (!user.googleId) {
       // Link Google account to existing user
+      console.log(`🔗 Linking Google account to existing user: ${email}`);
       user.googleId = googleId;
       user.profileImage = picture;
       await user.save();
+    } else {
+      console.log(`✨ User already linked: ${email}`);
     }
 
     const jwtToken = generateToken(jwt, user.id, user.email, user.username);
@@ -172,13 +178,13 @@ router.post('/google', async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('Google authentication error:', error);
-    res.status(401).json({ error: 'Invalid Google token' });
+    console.error('❌ Google authentication error:', error);
+    res.status(401).json({ error: 'Invalid or expired Google token' });
   }
-});
+};
 
 // Get current user
-router.get('/me', authenticateToken, async (req, res, next) => {
+exports.getCurrentUser = async (req, res, next) => {
   try {
     const user = await User.findByPk(req.userId, {
       attributes: { exclude: ['password'] }
@@ -188,24 +194,14 @@ router.get('/me', authenticateToken, async (req, res, next) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({
-      message: 'User retrieved successfully',
-      data: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImage: user.profileImage
-      }
-    });
+    res.json(user);
   } catch (error) {
     next(error);
   }
-});
+};
 
 // Update profile
-router.put('/profile', authenticateToken, async (req, res, next) => {
+exports.updateProfile = async (req, res, next) => {
   try {
     const { firstName, lastName, profileImage } = req.body;
 
@@ -223,7 +219,7 @@ router.put('/profile', authenticateToken, async (req, res, next) => {
 
     res.json({
       message: 'Profile updated successfully',
-      data: {
+      user: {
         id: user.id,
         email: user.email,
         username: user.username,
@@ -235,39 +231,4 @@ router.put('/profile', authenticateToken, async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-});
-
-// Delete account
-router.delete('/account', authenticateToken, async (req, res, next) => {
-  try {
-    const user = await User.findByPk(req.userId);
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Delete all user related data (playlists, favorites, etc)
-    const { Playlist, Favorite } = require('../models');
-    
-    // Delete all playlists and their songs
-    await Playlist.destroy({
-      where: { userId: req.userId }
-    });
-
-    // Delete all favorites
-    await Favorite.destroy({
-      where: { userId: req.userId }
-    });
-
-    // Delete user
-    await user.destroy();
-
-    res.json({
-      message: 'Account deleted successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-module.exports = router;
+};

@@ -14,17 +14,41 @@ const initializeSpotify = async () => {
     console.log('Spotify API initialized successfully');
     return true;
   } catch (error) {
-    console.error('Failed to initialize Spotify API:', error.message);
-    // Continue without Spotify if credentials are not set
-    return false;
+    console.error('Failed to initialize Spotify API - trying alternative method:', error.message);
+    try {
+      // Try alternative method for newer versions
+      const authOptions = {
+        url: 'https://accounts.spotify.com/api/token',
+        headers: {
+          'Authorization': 'Basic ' + Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64'),
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        form: {
+          grant_type: 'client_credentials'
+        },
+        json: true
+      };
+
+      const response = await axios.post(authOptions.url, authOptions.form, {
+        headers: authOptions.headers
+      });
+
+      spotifyApi.setAccessToken(response.data.access_token);
+      console.log('Spotify API initialized with alternative method');
+      return true;
+    } catch (altError) {
+      console.error('Failed to initialize Spotify API (alternative method):', altError.message);
+      return false;
+    }
   }
 };
 
-const searchMusic = async (query) => {
+const searchMusic = async (query, limit = 20) => {
   try {
-    const data = await spotifyApi.searchTracks(query, { limit: 20 });
+    const data = await spotifyApi.searchTracks(query, { limit: Math.min(limit, 50) }); // Spotify max 50 per request
     return data.body.tracks.items.map(track => ({
       spotifyId: track.id,
+      spotifyUri: track.uri,
       title: track.name,
       artists: track.artists.map(a => a.name),
       album: track.album.name,
@@ -38,7 +62,7 @@ const searchMusic = async (query) => {
   }
 };
 
-const searchMusicByMood = async (mood) => {
+const searchMusicByMood = async (mood, limit = 20) => {
   try {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
@@ -51,18 +75,21 @@ const searchMusicByMood = async (mood) => {
     const keywords = result.response.text().split(',').map(k => k.trim());
 
     let allTracks = [];
+    const tracksPerKeyword = Math.ceil(limit / keywords.length);
+    
     for (const keyword of keywords) {
-      const data = await spotifyApi.searchTracks(keyword, { limit: 5 });
+      const data = await spotifyApi.searchTracks(keyword, { limit: Math.min(tracksPerKeyword, 50) });
       allTracks = allTracks.concat(data.body.tracks.items);
     }
 
-    // Remove duplicates and limit to 20
+    // Remove duplicates and limit to requested amount
     const uniqueTracks = Array.from(
       new Map(allTracks.map(track => [track.id, track])).values()
-    ).slice(0, 20);
+    ).slice(0, limit);
 
     return uniqueTracks.map(track => ({
       spotifyId: track.id,
+      spotifyUri: track.uri,
       title: track.name,
       artists: track.artists.map(a => a.name),
       album: track.album.name,
