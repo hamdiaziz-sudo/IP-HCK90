@@ -8,7 +8,18 @@ let sequelize;
 
 if (config.use_env_variable) {
   // Production pakai DATABASE_URL
-  sequelize = new Sequelize(process.env[config.use_env_variable], {
+  const connectionUri = process.env[config.use_env_variable];
+
+  if (!connectionUri) {
+    console.error(
+      `Missing environment variable: ${config.use_env_variable}. Set DATABASE_URL to your Postgres connection string.`
+    );
+    throw new Error(
+      `${config.use_env_variable} is not set. Cannot initialize database connection.`
+    );
+  }
+
+  sequelize = new Sequelize(connectionUri, {
     dialect: "postgres",
     protocol: "postgres",
     logging: false,
