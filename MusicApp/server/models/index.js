@@ -1,27 +1,27 @@
 require("dotenv").config();
 const { Sequelize } = require("sequelize");
 const path = require("path");
-const config = require(path.join(__dirname, "../config/config.json"))[
-  process.env.NODE_ENV || "development"
-];
+const env = process.env.NODE_ENV || "development";
+const config = require(path.join(__dirname, "../config/config.json"))[env];
 
-const sequelize = new Sequelize(
-  config.database,
-  config.username,
-  config.password,
-  {
+let sequelize;
+
+if (config.use_env_variable) {
+  // Production pakai DATABASE_URL
+  sequelize = new Sequelize(process.env[config.use_env_variable], {
+    dialect: "postgres",
+    protocol: "postgres",
+    logging: false,
+  });
+} else {
+  // Development pakai config json
+  sequelize = new Sequelize(config.database, config.username, config.password, {
     host: config.host,
     port: config.port || 5432,
     dialect: config.dialect,
     logging: false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000,
-    },
-  }
-);
+  });
+}
 
 const db = {
   sequelize,
