@@ -52,7 +52,7 @@ Authorization: Bearer <your-jwt-token>
 - **Body**:
   ```json
   {
-    "credential": "google-oauth-credential"
+    "token": "google-id-token"
   }
   ```
 - **Response**: User object with token
